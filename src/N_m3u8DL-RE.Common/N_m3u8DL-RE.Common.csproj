@@ -2,15 +2,15 @@
 
   <PropertyGroup>
 	<OutputType>library</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
-    <RootNamespace>N_m3u8DL_RE.Common</RootNamespace>
-    <ImplicitUsings>enable</ImplicitUsings>
+	<TargetFramework>net8.0</TargetFramework>
+	<RootNamespace>N_m3u8DL_RE.Common</RootNamespace>
+	<ImplicitUsings>enable</ImplicitUsings>
 	<LangVersion>preview</LangVersion>
-    <Nullable>enable</Nullable>
+	<Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-	  <PackageReference Include="Spectre.Console" Version="0.47.1-preview.0.11" />
+	  <PackageReference Include="Spectre.Console" Version="0.48.0" />
   </ItemGroup>
 	
 </Project>
