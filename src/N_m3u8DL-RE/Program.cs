@@ -25,6 +25,7 @@ namespace N_m3u8DL_RE
             Console.CancelKeyPress += Console_CancelKeyPress;
             ServicePointManager.DefaultConnectionLimit = 1024;
             try { Console.CursorVisible = true; } catch { }
+
             string loc = "en-US";
             string currLoc = Thread.CurrentThread.CurrentUICulture.Name;
             if (currLoc == "zh-CN" || currLoc == "zh-SG") loc = "zh-CN";
@@ -61,15 +62,21 @@ namespace N_m3u8DL_RE
         static int GetOrder(StreamSpec streamSpec)
         {
             if (streamSpec.Channels == null) return 0;
-            else
-            {
-                var str = streamSpec.Channels.Split('/')[0];
-                return int.TryParse(str, out var order) ? order : 0;
-            }
+            
+            var str = streamSpec.Channels.Split('/')[0];
+            return int.TryParse(str, out var order) ? order : 0;
         }
 
         static async Task DoWorkAsync(MyOption option)
         {
+            
+            if (Console.IsOutputRedirected || Console.IsErrorRedirected)
+            {
+                option.ForceAnsiConsole = true;
+                option.NoAnsiColor = true;
+                Logger.Info(ResString.consoleRedirected);
+            }
+            CustomAnsiConsole.InitConsole(option.ForceAnsiConsole, option.NoAnsiColor);
             //检测更新
             CheckUpdateAsync();
 
@@ -199,8 +206,12 @@ namespace N_m3u8DL_RE
 
             //流提取器配置
             var extractor = new StreamExtractor(parserConfig);
-            extractor.LoadSourceFromUrl(url);
-
+            // 从链接加载内容
+            await RetryUtil.WebRequestRetryAsync(async () =>
+            {
+                await extractor.LoadSourceFromUrlAsync(url);
+                return true;
+            });
             //解析流信息
             var streams = await extractor.ExtractStreamsAsync();
 

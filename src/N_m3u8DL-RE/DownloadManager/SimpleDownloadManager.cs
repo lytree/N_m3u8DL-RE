@@ -168,6 +168,10 @@ namespace N_m3u8DL_RE.DownloadManager
                 if (result != null && result.Success) 
                 {
                     currentKID = MP4DecryptUtil.ReadInit(result.ActualFilePath);
+                    // try shaka packager, which can handle WebM
+                    if (string.IsNullOrEmpty(currentKID) &&  DownloaderConfig.MyOptions.UseShakaPackager) {
+                        currentKID = MP4DecryptUtil.ReadInitShaka(result.ActualFilePath, mp4decrypt);
+                    }
                     //从文件读取KEY
                     await SearchKeyAsync(currentKID);
                     //实时解密
@@ -235,6 +239,10 @@ namespace N_m3u8DL_RE.DownloadManager
                     if (string.IsNullOrEmpty(currentKID))
                     {
                         currentKID = MP4DecryptUtil.ReadInit(result.ActualFilePath);
+                    }
+                    // try shaka packager, which can handle WebM
+                    if (string.IsNullOrEmpty(currentKID) &&  DownloaderConfig.MyOptions.UseShakaPackager) {
+                        currentKID = MP4DecryptUtil.ReadInitShaka(result.ActualFilePath, mp4decrypt);
                     }
                     //从文件读取KEY
                     await SearchKeyAsync(currentKID);
@@ -577,6 +585,10 @@ namespace N_m3u8DL_RE.DownloadManager
             if (mergeSuccess && totalCount >= 1 && string.IsNullOrEmpty(currentKID) && streamSpec.Playlist!.MediaParts.First().MediaSegments.First().EncryptInfo.Method != Common.Enum.EncryptMethod.NONE)
             {
                 currentKID = MP4DecryptUtil.ReadInit(output);
+                // try shaka packager, which can handle WebM
+                if (string.IsNullOrEmpty(currentKID) &&  DownloaderConfig.MyOptions.UseShakaPackager) {
+                    currentKID = MP4DecryptUtil.ReadInitShaka(output, mp4decrypt);
+                }
                 //从文件读取KEY
                 await SearchKeyAsync(currentKID);
             }
@@ -616,12 +628,12 @@ namespace N_m3u8DL_RE.DownloadManager
         {
             ConcurrentDictionary<int, SpeedContainer> SpeedContainerDic = new(); //速度计算
             ConcurrentDictionary<StreamSpec, bool?> Results = new();
-
-            var progress = AnsiConsole.Progress().AutoClear(true);
+            
+            var progress = CustomAnsiConsole.Console.Progress().AutoClear(true);
             progress.AutoRefresh = DownloaderConfig.MyOptions.LogLevel != LogLevel.OFF;
 
             //进度条的列定义
-            progress.Columns(new ProgressColumn[]
+            var progressColumns = new ProgressColumn[]
             {
                 new TaskDescriptionColumn() { Alignment = Justify.Left },
                 new ProgressBarColumn(){ Width = 30 },
@@ -630,7 +642,12 @@ namespace N_m3u8DL_RE.DownloadManager
                 new DownloadSpeedColumn(SpeedContainerDic), //速度计算
                 new RemainingTimeColumn(),
                 new SpinnerColumn(),
-            });
+            };
+            if (DownloaderConfig.MyOptions.NoAnsiColor)
+            {
+                progressColumns = progressColumns.SkipLast(1).ToArray();
+            }
+            progress.Columns(progressColumns);
 
             if (DownloaderConfig.MyOptions.MP4RealTimeDecryption && !DownloaderConfig.MyOptions.UseShakaPackager
                 && DownloaderConfig.MyOptions.Keys != null && DownloaderConfig.MyOptions.Keys.Length > 0)
