@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-	<PackageReference Include="NiL.JS" Version="2.5.1677" />
+	<PackageReference Include="NiL.JS" Version="2.5.1684" />
 	<PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
   </ItemGroup>
 
