@@ -18,7 +18,7 @@ namespace N_m3u8DL_RE.CommandLine
 {
     internal partial class CommandInvoker
     {
-        public const string VERSION_INFO = "N_m3u8DL-RE (Beta version) 20231113";
+        public const string VERSION_INFO = "N_m3u8DL-RE (Beta version) 20240630";
 
         [GeneratedRegex("((best|worst)\\d*|all)")]
         private static partial Regex ForStrRegex();
@@ -53,6 +53,8 @@ namespace N_m3u8DL_RE.CommandLine
         private readonly static Option<bool> AppendUrlParams = new(new string[] { "--append-url-params" }, description: ResString.cmd_appendUrlParams, getDefaultValue: () => false);
         private readonly static Option<bool> MP4RealTimeDecryption = new (new string[] { "--mp4-real-time-decryption" }, description: ResString.cmd_MP4RealTimeDecryption, getDefaultValue: () => false);
         private readonly static Option<bool> UseShakaPackager = new (new string[] { "--use-shaka-packager" }, description: ResString.cmd_useShakaPackager, getDefaultValue: () => false);
+        private readonly static Option<bool> ForceAnsiConsole = new(new string[] { "--force-ansi-console" }, description: ResString.cmd_forceAnsiConsole);
+        private readonly static Option<bool> NoAnsiColor = new(new string[] { "--no-ansi-color" }, description: ResString.cmd_noAnsiColor);
         private readonly static Option<string?> DecryptionBinaryPath = new(new string[] { "--decryption-binary-path" }, description: ResString.cmd_decryptionBinaryPath) { ArgumentHelpName = "PATH" };
         private readonly static Option<string?> FFmpegBinaryPath = new(new string[] { "--ffmpeg-binary-path" }, description: ResString.cmd_ffmpegBinaryPath) { ArgumentHelpName = "PATH" };
         private readonly static Option<string?> BaseUrl = new(new string[] { "--base-url" }, description: ResString.cmd_baseUrl);
@@ -367,6 +369,14 @@ namespace N_m3u8DL_RE.CommandLine
             if (!string.IsNullOrEmpty(plistDurMax))
                 streamFilter.PlaylistMaxDur = OtherUtil.ParseSeconds(plistDurMax);
 
+            var bwMin = p.GetValue("bwMin");
+            if (!string.IsNullOrEmpty(bwMin))
+                streamFilter.BandwidthMin = int.Parse(bwMin) * 1000;
+
+            var bwMax = p.GetValue("bwMax");
+            if (!string.IsNullOrEmpty(bwMax))
+                streamFilter.BandwidthMax = int.Parse(bwMax) * 1000;
+
             var role = p.GetValue("role");
             if (System.Enum.TryParse(role, true, out RoleType roleType))
                 streamFilter.Role = roleType;
@@ -484,6 +494,8 @@ namespace N_m3u8DL_RE.CommandLine
                 var option = new MyOption
                 {
                     Input = bindingContext.ParseResult.GetValueForArgument(Input),
+                    ForceAnsiConsole = bindingContext.ParseResult.GetValueForOption(ForceAnsiConsole),
+                    NoAnsiColor = bindingContext.ParseResult.GetValueForOption(NoAnsiColor),
                     LogLevel = bindingContext.ParseResult.GetValueForOption(LogLevel),
                     AutoSelect = bindingContext.ParseResult.GetValueForOption(AutoSelect),
                     SkipMerge = bindingContext.ParseResult.GetValueForOption(SkipMerge),
@@ -562,7 +574,7 @@ namespace N_m3u8DL_RE.CommandLine
                     option.MuxAfterDone = true;
                     option.MuxOptions = muxAfterDoneValue;
                     if (muxAfterDoneValue.UseMkvmerge) option.MkvmergeBinaryPath = muxAfterDoneValue.BinPath;
-                    else option.FFmpegBinaryPath = muxAfterDoneValue.BinPath;
+                    else option.FFmpegBinaryPath ??= muxAfterDoneValue.BinPath;
                 }
 
 
@@ -594,7 +606,7 @@ namespace N_m3u8DL_RE.CommandLine
 
             var rootCommand = new RootCommand(VERSION_INFO)
             {
-                Input, TmpDir, SaveDir, SaveName, BaseUrl, ThreadCount, DownloadRetryCount, AutoSelect, SkipMerge, SkipDownload, CheckSegmentsCount,
+                Input, TmpDir, SaveDir, SaveName, BaseUrl, ThreadCount, DownloadRetryCount, ForceAnsiConsole, NoAnsiColor,AutoSelect, SkipMerge, SkipDownload, CheckSegmentsCount,
                 BinaryMerge, UseFFmpegConcatDemuxer, DelAfterDone, NoDateInfo, NoLog, WriteMetaJson, AppendUrlParams, ConcurrentDownload, Headers, /**SavePattern,**/ SubOnly, SubtitleFormat, AutoSubtitleFix,
                 FFmpegBinaryPath,
                 LogLevel, UILanguage, UrlProcessorArgs, Keys, KeyTextFile, DecryptionBinaryPath, UseShakaPackager, MP4RealTimeDecryption,

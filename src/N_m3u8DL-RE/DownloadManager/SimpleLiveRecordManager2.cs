@@ -212,7 +212,7 @@ namespace N_m3u8DL_RE.DownloadManager
                     //读取mp4信息
                     if (result != null && result.Success)
                     {
-                        currentKID = MP4DecryptUtil.ReadInit(result.ActualFilePath);
+                        currentKID = MP4DecryptUtil.GetMP4Info(result.ActualFilePath).KID;
                         //从文件读取KEY
                         await SearchKeyAsync(currentKID);
                         //实时解密
@@ -290,7 +290,7 @@ namespace N_m3u8DL_RE.DownloadManager
                         //读取init信息
                         if (string.IsNullOrEmpty(currentKID))
                         {
-                            currentKID = MP4DecryptUtil.ReadInit(result.ActualFilePath);
+                            currentKID = MP4DecryptUtil.GetMP4Info(result.ActualFilePath).KID;
                         }
                         //从文件读取KEY
                         await SearchKeyAsync(currentKID);
@@ -801,11 +801,11 @@ namespace N_m3u8DL_RE.DownloadManager
                 await StreamingUtil.WriteMasterListAsync(SelectedSteams, saveName, saveDir);
             }*/
 
-            var progress = AnsiConsole.Progress().AutoClear(true);
+            var progress = CustomAnsiConsole.Console.Progress().AutoClear(true);
             progress.AutoRefresh = DownloaderConfig.MyOptions.LogLevel != LogLevel.OFF;
-
+            
             //进度条的列定义
-            progress.Columns(new ProgressColumn[]
+            var progressColumns = new ProgressColumn[]
             {
                 new TaskDescriptionColumn() { Alignment = Justify.Left },
                 new RecordingDurationColumn(RecordedDurDic, RefreshedDurDic), //时长显示
@@ -813,7 +813,12 @@ namespace N_m3u8DL_RE.DownloadManager
                 new PercentageColumn(),
                 new DownloadSpeedColumn(SpeedContainerDic), //速度计算
                 new SpinnerColumn(),
-            });
+            };
+            if (DownloaderConfig.MyOptions.NoAnsiColor)
+            {
+                progressColumns = progressColumns.SkipLast(1).ToArray();
+            }
+            progress.Columns(progressColumns);
 
             await progress.StartAsync(async ctx =>
             {

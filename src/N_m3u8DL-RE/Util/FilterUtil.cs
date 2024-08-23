@@ -46,6 +46,10 @@ namespace N_m3u8DL_RE.Util
                 inputs = inputs.Where(i => i.Playlist?.TotalDuration > filter.PlaylistMinDur);
             if (filter.PlaylistMaxDur != null)
                 inputs = inputs.Where(i => i.Playlist?.TotalDuration < filter.PlaylistMaxDur);
+            if (filter.BandwidthMin != null)
+                inputs = inputs.Where(i => i.Bandwidth >= filter.BandwidthMin);
+            if (filter.BandwidthMax != null)
+                inputs = inputs.Where(i => i.Bandwidth <= filter.BandwidthMax);
             if (filter.Role.HasValue)
                 inputs = inputs.Where(i => i.Role == filter.Role);
 
@@ -135,7 +139,7 @@ namespace N_m3u8DL_RE.Util
             prompt.Select(basicStreams.Concat(audios).Concat(subs).First());
 
             //多选
-            var selectedStreams = AnsiConsole.Prompt(prompt);
+            var selectedStreams = CustomAnsiConsole.Console.Prompt(prompt);
 
             return selectedStreams;
         }

@@ -40,21 +40,25 @@ namespace N_m3u8DL_RE.Common.Log
             try
             {
                 var logDir = Path.GetDirectoryName(Environment.ProcessPath) + "/Logs";
-                if (!Directory.Exists(logDir)) { Directory.CreateDirectory(logDir); }
-                LogFilePath = Path.Combine(logDir, DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss-fff") + ".log");
-                //若文件存在则加序号
+                if (!Directory.Exists(logDir))
+                {
+                    Directory.CreateDirectory(logDir);
+                }
+
+                var now = DateTime.Now;
+                LogFilePath = Path.Combine(logDir, now.ToString("yyyy-MM-dd_HH-mm-ss-fff") + ".log");
                 int index = 1;
                 var fileName = Path.GetFileNameWithoutExtension(LogFilePath);
+                string init = "LOG " + now.ToString("yyyy/MM/dd") + Environment.NewLine
+                              + "Save Path: " + Path.GetDirectoryName(LogFilePath) + Environment.NewLine
+                              + "Task Start: " + now.ToString("yyyy/MM/dd HH:mm:ss") + Environment.NewLine
+                              + "Task CommandLine: " + Environment.CommandLine;
+                init += $"{Environment.NewLine}{Environment.NewLine}";
+                //若文件存在则加序号
                 while (File.Exists(LogFilePath))
                 {
                     LogFilePath = Path.Combine(Path.GetDirectoryName(LogFilePath)!, $"{fileName}-{index++}.log");
                 }
-                string now = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
-                string init = "LOG " + DateTime.Now.ToString("yyyy/MM/dd") + Environment.NewLine
-                    + "Save Path: " + Path.GetDirectoryName(LogFilePath) + Environment.NewLine
-                    + "Task Start: " + DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + Environment.NewLine
-                    + "Task CommandLine: " + Environment.CommandLine;
-                init += $"{Environment.NewLine}{Environment.NewLine}";
                 File.WriteAllText(LogFilePath, init, Encoding.UTF8);
             }
             catch (Exception ex)
@@ -74,13 +78,14 @@ namespace N_m3u8DL_RE.Common.Log
             {
                 if (subWrite == "")
                 {
-                    AnsiConsole.MarkupLine(write);
+                    CustomAnsiConsole.MarkupLine(write);
                 }
                 else
                 {
-                    AnsiConsole.Markup(write);
+                    CustomAnsiConsole.Markup(write);
                     Console.WriteLine(subWrite);
                 }
+
                 if (IsWriteFile && File.Exists(LogFilePath))
                 {
                     var plain = write.RemoveMarkup() + subWrite.RemoveMarkup();
@@ -112,6 +117,7 @@ namespace N_m3u8DL_RE.Common.Log
             {
                 data = VarsRepRegex().Replace(data, $"{ps[i]}", 1);
             }
+
             return data;
         }
 
@@ -202,6 +208,7 @@ namespace N_m3u8DL_RE.Common.Log
             {
                 data = exception.ToString().EscapeMarkup();
             }
+
             ErrorMarkUp(data);
         }
 
