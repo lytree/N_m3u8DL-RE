@@ -164,7 +164,7 @@ internal class SimpleLiveRecordManager2
         var saveDir = DownloaderConfig.MyOptions.SaveDir ?? Environment.CurrentDirectory;
         var saveName = DownloaderConfig.MyOptions.SaveName != null ? $"{DownloaderConfig.MyOptions.SaveName}.{streamSpec.Language}".TrimEnd('.') : dirName;
         var headers = DownloaderConfig.Headers;
-        var decryptEngine = DownloaderConfig.MyOptions.GetDecryptEngine();
+        var decryptEngine = DownloaderConfig.MyOptions.DecryptionEngine;
 
         Logger.Debug($"dirName: {dirName}; tmpDir: {tmpDir}; saveDir: {saveDir}; saveName: {saveName}");
 
@@ -211,7 +211,7 @@ internal class SimpleLiveRecordManager2
                     // 从文件读取KEY
                     await SearchKeyAsync(currentKID);
                     // 实时解密
-                    if (DownloaderConfig.MyOptions.MP4RealTimeDecryption && !string.IsNullOrEmpty(currentKID) && StreamExtractor.ExtractorType != ExtractorType.MSS)
+                    if (streamSpec.Playlist.MediaInit.IsEncrypted && DownloaderConfig.MyOptions.MP4RealTimeDecryption && !string.IsNullOrEmpty(currentKID) && StreamExtractor.ExtractorType != ExtractorType.MSS)
                     {
                         var enc = result.ActualFilePath;
                         var dec = Path.Combine(Path.GetDirectoryName(enc)!, Path.GetFileNameWithoutExtension(enc) + "_dec" + Path.GetExtension(enc));
@@ -270,7 +270,7 @@ internal class SimpleLiveRecordManager2
                         var processor = new MSSMoovProcessor(streamSpec);
                         var header = processor.GenHeader(File.ReadAllBytes(result.ActualFilePath));
                         await File.WriteAllBytesAsync(FileDic[streamSpec.Playlist!.MediaInit!]!.ActualFilePath, header);
-                        if (DownloaderConfig.MyOptions.MP4RealTimeDecryption && !string.IsNullOrEmpty(currentKID))
+                        if (seg.IsEncrypted && DownloaderConfig.MyOptions.MP4RealTimeDecryption && !string.IsNullOrEmpty(currentKID))
                         {
                             // 需要重新解密init
                             var enc = FileDic[streamSpec.Playlist!.MediaInit!]!.ActualFilePath;
@@ -290,7 +290,7 @@ internal class SimpleLiveRecordManager2
                     // 从文件读取KEY
                     await SearchKeyAsync(currentKID);
                     // 实时解密
-                    if (DownloaderConfig.MyOptions.MP4RealTimeDecryption && !string.IsNullOrEmpty(currentKID))
+                    if (seg.IsEncrypted && DownloaderConfig.MyOptions.MP4RealTimeDecryption && !string.IsNullOrEmpty(currentKID))
                     {
                         var enc = result.ActualFilePath;
                         var dec = Path.Combine(Path.GetDirectoryName(enc)!, Path.GetFileNameWithoutExtension(enc) + "_dec" + Path.GetExtension(enc));
@@ -333,7 +333,7 @@ internal class SimpleLiveRecordManager2
                 if (result != null && result.Success)
                     task.Increment(1);
                 // 实时解密
-                if (DownloaderConfig.MyOptions.MP4RealTimeDecryption && result != null && result.Success && !string.IsNullOrEmpty(currentKID))
+                if (seg.IsEncrypted && DownloaderConfig.MyOptions.MP4RealTimeDecryption && result != null && result.Success && !string.IsNullOrEmpty(currentKID))
                 {
                     var enc = result.ActualFilePath;
                     var dec = Path.Combine(Path.GetDirectoryName(enc)!, Path.GetFileNameWithoutExtension(enc) + "_dec" + Path.GetExtension(enc));
@@ -840,7 +840,7 @@ internal class SimpleLiveRecordManager2
             DownloaderConfig.MyOptions.ConcurrentDownload = true;
             DownloaderConfig.MyOptions.MP4RealTimeDecryption = true;
             DownloaderConfig.MyOptions.LiveRecordLimit = DownloaderConfig.MyOptions.LiveRecordLimit ?? TimeSpan.MaxValue;
-            if (DownloaderConfig.MyOptions is { MP4RealTimeDecryption: true, UseShakaPackager: false, Keys.Length: > 0 })
+            if (DownloaderConfig.MyOptions is { MP4RealTimeDecryption: true, DecryptionEngine: not DecryptEngine.SHAKA_PACKAGER, Keys.Length: > 0 })
                 Logger.WarnMarkUp($"[darkorange3_1]{ResString.realTimeDecMessage}[/]");
             var limit = DownloaderConfig.MyOptions.LiveRecordLimit;
             if (limit != TimeSpan.MaxValue)

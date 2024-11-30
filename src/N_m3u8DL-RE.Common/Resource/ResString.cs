@@ -1,6 +1,6 @@
 ﻿namespace N_m3u8DL_RE.Common.Resource;
 
-public class ResString
+public static class ResString
 {
     public static string CurrentLoc = "en-US";
 
@@ -77,7 +77,7 @@ public class ResString
     public static string cmd_uiLanguage => GetText("cmd_uiLanguage");
     public static string cmd_urlProcessorArgs => GetText("cmd_urlProcessorArgs");
     public static string cmd_useShakaPackager => GetText("cmd_useShakaPackager");
-    public static string cmd_useMp4decrypt => GetText("cmd_useMp4decrypt");
+    public static string cmd_decryptionEngine => GetText("cmd_decryptionEngine");
     public static string cmd_concurrentDownload => GetText("cmd_concurrentDownload");
     public static string cmd_useSystemProxy => GetText("cmd_useSystemProxy");
     public static string cmd_customProxy => GetText("cmd_customProxy");
@@ -125,6 +125,7 @@ public class ResString
     public static string promptTitle => GetText("promptTitle");
     public static string readingInfo => GetText("readingInfo");
     public static string searchKey => GetText("searchKey");
+    public static string decryptionFailed => GetText("decryptionFailed");
     public static string segmentCountCheckNotPass => GetText("segmentCountCheckNotPass");
     public static string selectedStream => GetText("selectedStream");
     public static string startDownloading => GetText("startDownloading");
