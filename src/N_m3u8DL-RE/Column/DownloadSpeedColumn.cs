@@ -27,7 +27,7 @@ internal sealed class DownloadSpeedColumn : ProgressColumn
         var now = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
         var flag = task.IsFinished || !task.IsStarted;
         // 单文件下载汇报进度
-        if (!flag && speedContainer.SingleSegment && speedContainer.ResponseLength != null)
+        if (!flag && speedContainer is { SingleSegment: true, ResponseLength: not null })
         {
             task.MaxValue = (double)speedContainer.ResponseLength;
             task.Value = speedContainer.RDownloaded;
@@ -43,6 +43,6 @@ internal sealed class DownloadSpeedColumn : ProgressColumn
         }
         DateTimeStringDic[taskId] = now;
         var style = flag ? Style.Plain : MyStyle;
-        return flag ? new Text("-", style).Centered() : new Text(GlobalUtil.FormatFileSize(speedContainer.NowSpeed) + (speedContainer.LowSpeedCount > 0 ? $"({speedContainer.LowSpeedCount})" : ""), style).Centered();
+        return flag ? new Text("-", style).Centered() : new Text(GlobalUtil.FormatFileSize(speedContainer.NowSpeed) + "ps" + (speedContainer.LowSpeedCount > 0 ? $"({speedContainer.LowSpeedCount})" : ""), style).Centered();
     }
 }
